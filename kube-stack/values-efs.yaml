@@ -1,0 +1,123 @@
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteMany"]
+          storageClassName: "efs-sc" # Substitua pelo nome correto do seu StorageClass para EFS
+          resources:
+            requests:
+              storage: 50Gi
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: monitoring
+                  operator: In
+                  values:
+                    - "true"
+
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteMany"]
+          storageClassName: "efs-sc" # Substitua pelo nome correto do seu StorageClass para EFS
+          resources:
+            requests:
+              storage: 10Gi
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+            - matchExpressions:
+                - key: monitoring
+                  operator: In
+                  values:
+                    - "true"
+
+grafana:
+  persistence:
+    enabled: true
+    storageClassName: "efs-sc"  # Substitua pelo nome do seu StorageClass para EFS
+    accessModes:
+      - ReadWriteMany
+    size: 10Gi  # Tamanho do volume persistente
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: monitoring
+                operator: In
+                values:
+                  - "true"
+
+# prometheus:
+#   prometheusSpec:
+#     storageSpec:
+#       volumeClaimTemplate:
+#         spec:
+#           accessModes: ["ReadWriteMany"]
+#           storageClassName: "efs-sc"
+#           resources:
+#             requests:
+#               storage: 50Gi
+#     affinity:
+#       nodeAffinity:
+#         requiredDuringSchedulingIgnoredDuringExecution:
+#           nodeSelectorTerms:
+#             - matchExpressions:
+#                 - key: monitoring
+#                   operator: In
+#                   values:
+#                     - "true"
+
+# alertmanager:
+#   alertmanagerSpec:
+#     storage:
+#       volumeClaimTemplate:
+#         spec:
+#           accessModes: ["ReadWriteMany"]
+#           storageClassName: "efs-sc"
+#           resources:
+#             requests:
+#               storage: 10Gi
+#     affinity:
+#       nodeAffinity:
+#         requiredDuringSchedulingIgnoredDuringExecution:
+#           nodeSelectorTerms:
+#             - matchExpressions:
+#                 - key: monitoring
+#                   operator: In
+#                   values:
+#                     - "true"
+
+# grafana:
+#   persistence:
+#     enabled: true
+#     storageClassName: "efs-sc"
+#     accessModes:
+#       - ReadWriteMany
+#     size: 10Gi
+#   affinity:
+#     nodeAffinity:
+#       requiredDuringSchedulingIgnoredDuringExecution:
+#         nodeSelectorTerms:
+#           - matchExpressions:
+#               - key: monitoring
+#                 operator: In
+#                 values:
+#                   - "true"
+#   initContainers:
+#     - name: init-chown-data
+#       image: busybox:1.31.1
+#       command: ['sh', '-c', 'chown -R 472:472 /var/lib/grafana']
+#       volumeMounts:
+#         - name: storage
+#           mountPath: /var/lib/grafana
+
+
+#  helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack --version 45.24.0 --namespace monitoring --create-namespace -f values-efs.yaml

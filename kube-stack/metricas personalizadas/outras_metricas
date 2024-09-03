@@ -1,0 +1,49 @@
+Sugestões de Queries Adicionais para Monitoramento de Pods
+Monitorar Pods com Muitos Restartes (CrashLoopBackOff):
+
+
+Objetivo: Detectar pods que estão frequentemente reiniciando, o que pode indicar falhas de aplicação ou problemas de configuração.
+
+sum(kube_pod_container_status_restarts_total{job="kube-state-metrics"}) by (pod, namespace)
+
+Sugestão de Threshold: Configure o alerta para disparar quando o número de reinicializações for maior que 5 em um curto período.
+Monitorar Uso de Memória Acima do Limite Configurado:
+
+Objetivo: Detectar quando um pod está consumindo mais memória do que o configurado, o que pode levar a problemas de OOMKilled (Out Of Memory).
+Query:
+promql
+Copiar código
+sum(container_memory_working_set_bytes{image!=""}) by (pod, namespace)
+Sugestão de Threshold: Defina limites como 500Mi (524288000 bytes) para alertar sobre o uso excessivo de memória.
+Monitorar Pods em Estados de Erro:
+
+Objetivo: Detectar pods que estão em estados problemáticos, como Pending, Failed, ou Unknown.
+Query:
+promql
+Copiar código
+kube_pod_status_phase{phase=~"Pending|Failed|Unknown"}
+Sugestão de Threshold: Configure o alerta para disparar se o número de pods em estado de erro for maior que 0.
+Monitorar Latência de Aplicações (Request Duration):
+
+Objetivo: Monitorar a latência das requisições para identificar problemas de performance na aplicação.
+Query:
+promql
+Copiar código
+histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job="my-application"}[5m])) by (le))
+Sugestão de Threshold: Defina um valor como 0.5 segundos para alertar sobre requisições que estão demorando mais do que o esperado.
+Monitorar Pods OOMKilled (Out of Memory):
+
+Objetivo: Identificar pods que foram terminados por falta de memória.
+Query:
+promql
+Copiar código
+count by (pod, namespace) (kube_pod_container_status_last_terminated_reason{reason="OOMKilled"})
+Sugestão de Threshold: Configure o alerta para disparar sempre que o contador for maior que 0.
+Monitorar Uso de Disco de Containers:
+
+Objetivo: Monitorar o uso de disco dos containers, especialmente para aplicações que fazem uso intensivo de armazenamento.
+Query:
+promql
+Copiar código
+sum(container_fs_usage_bytes{image!=""}) by (pod, namespace)
+Sugestão de Threshold: Configure um alerta para o uso de disco acima de 1Gi dependendo da capacidade alocada.

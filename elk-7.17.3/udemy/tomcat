@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp-pvc-deployment
+  namespace: dev
+  labels:
+    app: tomcat
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: tomcat
+  template:
+    metadata:
+      labels:
+        app: tomcat
+    spec:
+      containers:
+      - name: webapp-container
+        image: tomcat:8.0
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            memory: "200Mi"
+            cpu: "50m"
+          limits:
+            memory: "700Mi"
+            cpu: "100m"
+      #   volumeMounts:
+      #   - mountPath: "pvc-webapp"
+      #     name: volume
+      # volumes:
+      #   - name: volume
+      #     persistentVolumeClaim:
+      #       claimName: tomcat-pvc2

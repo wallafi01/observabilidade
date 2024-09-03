@@ -1,0 +1,64 @@
+# replicas: 1
+
+# volumeClaimTemplate:
+#   accessModes: 
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 20Gi
+#   storageClassName: gp3
+
+# affinity:
+#   nodeAffinity:
+#     requiredDuringSchedulingIgnoredDuringExecution:
+#       nodeSelectorTerms:
+#         - matchExpressions:
+#             - key: monitoring
+#               operator: In
+#               values:
+#                 - "true"
+
+replicas: 1
+
+volumeClaimTemplate:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: gp3
+
+readinessProbe:
+  initialDelaySeconds: 60
+  timeoutSeconds: 10
+  periodSeconds: 10
+  failureThreshold: 10
+
+clusterHealthCheckParams: "wait_for_status=green&timeout=1s"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: monitoring
+              operator: In
+              values:
+                - "true"
+
+
+
+
+# helm install elasticsearch elastic/elasticsearch \
+#   --version 7.17.3 \
+#   -n efk \
+#   --set replicas=1 \
+#   --set volumeClaimTemplate.accessModes[0]=ReadWriteOnce \
+#   --set volumeClaimTemplate.resources.requests.storage=20Gi \
+#   --set volumeClaimTemplate.storageClassName=gp3 \
+#   --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].key=monitoring \
+#   --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].operator=In \
+#   --set affinity.nodeAffinity.requiredDuringSchedulingIgnoredDuringExecution.nodeSelectorTerms[0].matchExpressions[0].values[0]=true
+
+#helm install elasticsearch elastic/elasticsearch --version 8.5.1 -n efk --values values-es.yaml
+#kubectl get secrets --namespace=efk elasticsearch-master-credentials -ojsonpath='{.data.password}' | base64 -d

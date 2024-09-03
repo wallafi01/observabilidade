@@ -1,0 +1,148 @@
+
+Para adicionar logs de pods do EKS ao Grafana usando o CloudWatch, você precisará seguir estas etapas principais:
+
+Configurar o CloudWatch para coletar logs dos pods do EKS.
+Adicionar o CloudWatch como uma fonte de dados no Grafana.
+Criar dashboards ou consultas no Grafana para visualizar esses logs.
+1. Configurar o CloudWatch para Coletar Logs dos Pods do EKS
+Primeiro, você precisa garantir que os logs dos pods do EKS estejam sendo enviados para o CloudWatch. Isso geralmente envolve a configuração do aws-for-fluent-bit ou fluentd como um DaemonSet no seu cluster EKS.
+
+Configuração do Fluent Bit
+Aqui está um exemplo básico de como configurar o Fluent Bit para enviar logs para o CloudWatch:
+
+Crie um arquivo de configuração do Fluent Bit:
+
+Crie um arquivo chamado fluent-bit-configmap.yaml com a configuração do Fluent Bit:
+
+yaml
+Copiar código
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+  namespace: kube-system
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+        Flush         1
+        Daemon        Off
+        Log_Level     info
+
+    [INPUT]
+        Name          tail
+        Path          /var/log/containers/*.log
+        Parser        docker
+        Tag           kube.*
+        DB            /var/log/fluent-bit-containers.db
+        Mem_Buf_Limit  5MB
+
+    [FILTER]
+        Name          kubernetes
+        Match         kube.*
+        K8S-Logging.Parser   On
+        K8S-Logging.Exclude  On
+
+    [OUTPUT]
+        Name          cloudwatch
+        Match         kube.*
+        region        us-east-1
+        log_group_name fluent-bit-logs
+        log_stream_prefix from-fluent-bit-
+        auto_create_group true
+Aplique o ConfigMap:
+
+bash
+Copiar código
+kubectl apply -f fluent-bit-configmap.yaml
+Crie o DaemonSet do Fluent Bit:
+
+Crie um arquivo chamado fluent-bit-daemonset.yaml com o DaemonSet do Fluent Bit:
+
+yaml
+Copiar código
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluent-bit
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      app: fluent-bit
+  template:
+    metadata:
+      labels:
+        app: fluent-bit
+    spec:
+      serviceAccount: fluent-bit
+      containers:
+        - name: fluent-bit
+          image: amazon/aws-for-fluent-bit:latest
+          volumeMounts:
+            - name: config
+              mountPath: /fluent-bit/etc/fluent-bit.conf
+              subPath: fluent-bit.conf
+      volumes:
+        - name: config
+          configMap:
+            name: fluent-bit-config
+Crie um ServiceAccount para o Fluent Bit:
+
+Crie um arquivo chamado fluent-bit-serviceaccount.yaml:
+
+yaml
+Copiar código
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: fluent-bit
+  namespace: kube-system
+Aplique o DaemonSet e o ServiceAccount:
+
+bash
+Copiar código
+kubectl apply -f fluent-bit-serviceaccount.yaml
+kubectl apply -f fluent-bit-daemonset.yaml
+2. Adicionar o CloudWatch como Fonte de Dados no Grafana
+Acesse o Grafana.
+
+Vá para Configurações > Fontes de Dados.
+
+Clique em "Adicionar Fonte de Dados".
+
+Escolha "CloudWatch" como tipo de fonte de dados.
+
+Configure a Fonte de Dados:
+
+Nome: Um nome para sua fonte de dados, como CloudWatch Logs.
+Default: Marque se quiser que essa seja a fonte de dados padrão.
+Default Region: A região AWS onde seu CloudWatch está configurado.
+Authentication Provider: Pode usar Access & Secret Key ou IAM Role.
+Adicione suas credenciais (Access Key e Secret Key) se necessário.
+
+Clique em "Salvar & Testar" para verificar se a configuração está correta.
+
+3. Criar Dashboards ou Consultas no Grafana
+Crie um novo painel ou dashboard no Grafana.
+
+Escolha a fonte de dados "CloudWatch" que você configurou.
+
+Configure as consultas para buscar logs específicos.
+
+Por exemplo, para visualizar logs do grupo de logs do CloudWatch:
+
+Namespace: AWS/Logs
+Metric Name: IncomingLogEvents
+Dimension: LogGroupName e LogStreamName
+Personalize seus painéis conforme necessário para exibir os dados dos logs.
+
+Exemplo de Consulta no Grafana
+Se você deseja buscar logs específicos, use a seguinte configuração para consultar os logs:
+
+Query Type: Logs
+Log Group: fluent-bit-logs
+Log Stream Prefix: from-fluent-bit-
+Você pode usar filtros e outros parâmetros para refinar suas consultas e visualizações.
+
+Resumo
+Ao seguir esses passos, você configurará o Fluent Bit para enviar logs de pods do EKS para o CloudWatch, adicionará o CloudWatch como uma fonte de dados no Grafana e criará consultas e dashboards para visualizar esses logs.

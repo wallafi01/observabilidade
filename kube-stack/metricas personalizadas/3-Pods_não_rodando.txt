@@ -1,0 +1,57 @@
+1 - Ir em dashboard > NEW > New Dashboard > import dashhboard (colocar o arqivo json)
+
+2 - Ii rme Dashboad > Slecionar o dashhboard criado
+
+	seleccionar : dashhboad de  "Pods não rodando" > edit > alert > criar alerta
+
+	1. Enter alert rule name: Pods não rodando
+	2. Define query and alert condition 
+
+		A: Prometheus
+		slelecionar code
+		Metrics browser: kube_pod_status_phase{phase!="Running", phase!="Succeeded"}
+		
+		Expressions:
+
+		B - Reduce					C Threshold
+		Input: A					Input: B
+		Function: Count       Mode: Strict		IS ABOVE: 0
+								Custom recovery threshhold:
+								Stop alerting when below : 0
+
+
+	3. Set evaluation behavior
+
+		Folder: Monitoramento EKS (criar)
+		Evaluation group and interval: Pod Status Group
+		periodo: 1m
+		pendinf period: 5m
+
+	4. Configure labels and notifications
+
+		Labels: Critical = PodNotRunning
+		Notifications: 
+		Select Contact Point
+		Contact Point: Slack
+
+ 
+	
+	5. Add annotations
+
+	Summary (optional)
+
+	"Um ou mais pods não estão rodando no namespace {{ $labels.namespace }}."
+
+	Description (optional)
+
+	"Este alerta dispara quando um pod está em um estado diferente de Running ou Succeeded, indicando que o pod pode estar em erro ou aguardando ação."
+
+	Runbook URL (optional)
+
+	https://
+
+	Criar
+
+
+	
+	

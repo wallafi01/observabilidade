@@ -1,0 +1,87 @@
+# Custom values for kube-prometheus-stack
+
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp3
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: monitoring
+              operator: In
+              values:
+              - "true"
+
+alertmanager:
+  alertmanagerSpec:
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp3
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+    affinity:
+      nodeAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+          nodeSelectorTerms:
+          - matchExpressions:
+            - key: monitoring
+              operator: In
+              values:
+              - "true"
+
+grafana:
+  persistence:
+    enabled: true
+    storageClassName: "gp3"
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi 
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: monitoring
+                operator: In
+                values:
+                  - "true"
+# grafana:
+#   persistence:
+#     enabled: true
+#     existingClaim: grafana-pvc
+#     storageClassName: gp3
+#     size: 10Gi
+#   affinity:
+#     nodeAffinity:
+#       requiredDuringSchedulingIgnoredDuringExecution:
+#         nodeSelectorTerms:
+#         - matchExpressions:
+#           - key: monitoring
+#             operator: In
+#             values:
+#             - "true"
+## nesse precisa criar 3-pvc-grafana.yaml
+
+#kubectl apply -f gp3
+#helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack --namespace monitoring --create-namespace -f values.yaml
+#kubectl apply -f pvc-grafana.yaml
+
+#kubectl get secret kube-prometheus-stack-grafana --namespace monitoring -o jsonpath='{.data.admin-password}' | base64 --decode
+
+#prom-operator
+
+
+###outraa opcap
+
+#  helm install kube-prometheus-stack prometheus-community/kube-prometheus-stack --version 45.24.0 --namespace monitoring --create-namespace -f 2-values.yaml

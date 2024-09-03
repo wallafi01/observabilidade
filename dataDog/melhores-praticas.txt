@@ -1,0 +1,35 @@
+Verificar Dshboards:
+	Dashboard Lists
+
+Infraestrtura:
+	Coontainers
+		Selecionar : namespace; Deployment
+	Kubernetes Overviview
+
+Metrics
+
+Logs:
+	explorer:
+		Kubernetes namespaces
+		Pod Name
+
+	Pipelines:
+		Index: criar index:
+			nome: index erro	
+			filter: status:error	
+		Log Fowarding:
+			new archive	
+				nomer:
+				filter: status:error
+				selecionar S3 , CRIAR BUCKETS
+
+Monitors:
+	new monitor
+		metric
+			1 - Choose the detection method : Thhreshold Alert
+			2 - Define the metric : edit: system.disk.in_use e source: system.disk.in_use
+			3 - Set alert conditions: definir a procentagem 700
+			4 - Configure notifications & automations
+				Adicionar mensgaem
+				Metada: P1 tags Tems : Criar um time
+				Aggreation: Simple Alert

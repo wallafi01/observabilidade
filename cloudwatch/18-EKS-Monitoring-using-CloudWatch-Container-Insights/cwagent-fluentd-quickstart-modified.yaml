@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: cwagent-pvc
+  namespace: amazon-cloudwatch
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: gp3
+
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: cwagent-fluentd
+  namespace: amazon-cloudwatch
+  labels:
+    app: cwagent-fluentd
+spec:
+  selector:
+    matchLabels:
+      name: cwagent-fluentd
+  template:
+    metadata:
+      labels:
+        name: cwagent-fluentd
+    spec:
+      containers:
+      - name: cwagent
+        image: amazon/cloudwatch-agent:latest
+        volumeMounts:
+        - name: cwagent-persistent-storage
+          mountPath: /var/lib/cwagent/state
+        resources:
+          limits:
+            memory: 512Mi
+            cpu: 200m
+          requests:
+            memory: 256Mi
+            cpu: 100m
+      volumes:
+      - name: cwagent-persistent-storage
+        persistentVolumeClaim:
+          claimName: cwagent-pvc

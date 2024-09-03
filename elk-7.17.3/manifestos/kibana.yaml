@@ -1,0 +1,44 @@
+apiVersion: kibana.k8s.elastic.co/v1
+kind: Kibana
+metadata:
+  name: quickstart
+spec:
+  version: 8.15.0
+  count: 1
+  elasticsearchRef:
+    name: quickstart
+
+# apiVersion: v1
+# kind: PersistentVolumeClaim
+# metadata:
+#   name: kibana-data
+#   namespace: default  # Ajuste conforme o namespace do Kibana
+# spec:
+#   accessModes:
+#     - ReadWriteOnce
+#   resources:
+#     requests:
+#       storage: 10Gi  # Ajuste o tamanho conforme necessário
+#   storageClassName: gp3
+# ---
+
+# apiVersion: kibana.k8s.elastic.co/v1
+# kind: Kibana
+# metadata:
+#   name: quickstart
+#   namespace: default  # Ajuste conforme o namespace do Kibana
+# spec:
+#   version: 8.15.0
+#   count: 1
+#   elasticsearchRef:
+#     name: quickstart
+#   volumeClaimTemplates:
+#   - metadata:
+#       name: kibana-data
+#     spec:
+#       accessModes:
+#         - ReadWriteOnce
+#       resources:
+#         requests:
+#           storage: 10Gi  # Ajuste o tamanho conforme necessário
+#       storageClassName: gp3

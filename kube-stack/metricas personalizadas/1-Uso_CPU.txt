@@ -1,0 +1,66 @@
+1 - Ir em dashboard > NEW > New Dashboard > import dashhboard (colocar o arqivo json)
+
+2 - Ii rme Dashboad > Slecionar o dashhboard criado
+
+	seleccionar : dashhboad de  "USO DE CPU" > edit > alert > criar alerta
+
+	1. Enter alert rule name: Uso de CPU
+	2. Define query and alert condition 
+
+		A: Prometheus
+		slelecionar code
+		Metrics browser: sum(rate(container_cpu_usage_seconds_total{image!=""}[5m])) by (pod, namespace)
+		
+		Expressions:
+
+		B - Reduce					C Threshold
+		Input: A					Input: B
+		Function: Last       Mode: Strict		IS ABOVE: 0.7
+								Custom recovery threshhold:
+								Stop alerting when below : 0.7
+
+
+	3. Set evaluation behavior
+
+		Folder: Monitoramento EKS (criar)
+		Evaluation group and interval: CPU Usage Group
+		periodo: 1m
+		Pending period: 5m
+
+
+	4. Configure labels and notifications
+
+		Labels: Severity = critical
+		Notifications: 
+		Select Contact Point
+		Contact Point: Slack
+
+ 
+	
+	5. Add annotations
+
+	Summary (optional)
+
+	"Uso de CPU alto no namespace {{ $labels.namespace }} para o pod {{ $labels.pod }}"
+
+	Description (optional)
+
+	"Este alerta é acionado quando o uso de CPU ultrapassa o limite configurado de 80% por um período de 5 minutos. Isso indica que o pod está consumindo recursos de CPU além do esperado."
+
+	Runbook URL (optional)
+
+	https://
+
+	Criar
+
+
+####################################################################
+
+Valores Comuns para CPU:
+
+0.5: Indica 50% de um núcleo de CPU, ou 500 milicores. Este é um bom ponto de partida para alertar quando o uso de CPU está elevado, mas não crítico.
+1.0: Representa o uso de 100% de um núcleo de CPU. Use esse valor se cada pod está configurado para ter acesso a pelo menos um núcleo completo.
+1.5 a 2.0: Para pods que são esperados a usar mais de um núcleo de CPU, defina alertas para valores como 1.5 (150% de um núcleo) ou 2.0 (200%).
+
+	
+	

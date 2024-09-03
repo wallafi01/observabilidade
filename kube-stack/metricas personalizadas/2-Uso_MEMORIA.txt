@@ -1,0 +1,58 @@
+1 - Ir em dashboard > NEW > New Dashboard > import dashhboard (colocar o arqivo json)
+
+2 - Ii rme Dashboad > Slecionar o dashhboard criado
+
+	seleccionar : dashhboad de  "USO DE MEMORIA > edit > alert > criar alerta
+
+	1. Enter alert rule name: Uso de CPU
+	2. Define query and alert condition 
+
+		A: Prometheus
+		slelecionar code
+		Metrics browser: sum(container_memory_working_set_bytes{image!=""}) by (pod, namespace)
+		
+		Expressions:
+
+		B - Reduce					C Threshold
+		Input: A					Input: B
+		Function: Last       Mode: Strict		IS ABOVE: 524288000
+								Custom recovery threshhold:
+								Stop alerting when below : 524288000
+
+
+	3. Set evaluation behavior
+
+		Folder: Monitoramento EKS (criar)
+		Evaluation group and interval: Memory Usage Group
+		periodo: 1m		
+		Pending period: 5m
+		
+
+	4. Configure labels and notifications
+
+		Labels: Severity = HighMemoryUsage
+		Notifications: 
+		Select Contact Point
+		Contact Point: Slack
+
+ 
+	
+	5. Add annotations
+
+	Summary (optional)
+
+	"Uso de memória alto no namespace {{ $labels.namespace }} para o pod {{ $labels.pod }}"
+
+	Description (optional)
+
+	"Este alerta dispara quando o uso de memória por pod ultrapassa o limite configurado de 500 MiB durante 5 minutos. Isso pode indicar um consumo de recursos maior do que o esperado."
+
+	Runbook URL (optional)
+
+	https://
+
+	Criar
+
+
+	
+	

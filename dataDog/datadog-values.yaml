@@ -1,0 +1,126 @@
+datadog:
+  apiKey: "6ae82e020464f731b57c16b1c1bfa8c5"  # Substitua pela sua API Key do Datadog
+
+  # Ativa o monitoramento de logs de contêineres
+  logs:
+    enabled: true
+    containerCollectAll: true  # Coleta logs de todos os contêineres
+    containerLogsPath: "/var/lib/docker/containers"  # Caminho onde os logs dos contêineres estão armazenados
+    openFilesLimit: 1000  # Aumenta o limite de arquivos abertos para garantir a coleta de todos os logs
+
+  # Ativa o agente de processos para monitoramento detalhado dos processos
+  processAgent:
+    enabled: true
+
+  # Coleta detalhada de processos
+  process_config:
+    process_collection:
+      enabled: true
+
+  # Ativa a coleta de métricas do Kubernetes, como métricas de nodes e pods
+  kubeStateMetricsEnabled: true
+
+  # Ativa a coleta de métricas do cluster para monitoramento detalhado
+  clusterChecks:
+    enabled: true
+
+  # Configurações para monitoramento de eventos do Kubernetes
+  kubeEvents:
+    enabled: true
+
+  # Coleta de métricas do Docker e monitoramento de redes
+  docker:
+    network:
+      enabled: true
+
+  # Configuração para segurança - coleta de eventos de segurança de processos e execução de comandos suspeitos
+  securityAgent:
+    runtime:
+      enabled: true
+    compliance:
+      enabled: true
+
+  # Monitoramento de recursos de host para obter métricas como uso de CPU e memória do host
+  hostMonitoring:
+    enabled: true
+
+  # Configuração de captura de APM (Application Performance Monitoring) para aplicações
+  apm:
+    enabled: true
+    env: "homologation"  # Defina o ambiente da aplicação (produção, staging, etc.)
+    non_local_traffic: true  # Permite que o agente escute o tráfego de APM de fora do contêiner
+    analyze_traces: true  # Ativa a análise de traces
+    receiver_port: 8126  # Porta padrão do Trace Agent
+    connection_limit: 200  # Limite de conexões simultâneas para o APM
+    log_level: "INFO"  # Define o nível de log do APM, pode ser DEBUG, INFO, WARN, etc.
+    trace_sample_rate: 1.0  # Taxa de amostragem de traces, entre 0 e 1 (1.0 significa 100% dos traces)
+    trace_analytics_enabled: true  # Ativa a análise de traces para APM Analytics
+    extra_tags: "team:devops,service:myapp"  # Adiciona tags extras aos traces, útil para segmentação
+
+  # Monitora a integridade dos logs
+  logCollection:
+    containerCollectAll: true  # Coleta todos os logs dos contêineres
+    containerFilterName: ""    # Pode definir filtros específicos de nome de contêiner
+
+  # Configuração de agente para execução em nós específicos (afinidade e tolerâncias)
+  nodeSelector:
+    datadog-agent: enabled
+
+  tolerations:
+    - key: "node-role.kubernetes.io/master"
+      effect: "NoSchedule"
+
+  # Configuração de coleta de métricas de aplicação
+  metrics:
+    enabled: true
+
+  # Configuração adicional de proxy, se necessário, para conectar o Datadog Agent a um ambiente com restrições de rede
+
+  # Configuração de autenticação e proteção de dados
+  secrets:
+    backend: "kubernetes"
+
+  # Configuração de Autodiscovery para detectar automaticamente os contêineres e aplicar a configuração correta
+  autodiscovery:
+    enabled: true
+    container_include:
+      - image: "*"  # Inclui todos os contêineres
+
+  # Configuração adicional para ajuste fino de recursos
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 200m
+    requests:
+      memory: 256Mi
+      cpu: 100m
+
+  # Configuração de segurança e autenticação para APM
+  apm_security:
+    tls_verify: true  # Ativa a verificação TLS para segurança adicional
+    auth_token: "mysecrettoken"  # Token de autenticação, se necessário
+
+  # Configuração de filtragem de traces para evitar excesso de dados irrelevantes
+  trace_filters:
+    ignore_resources: "GET /healthcheck,GET /metrics"  # Ignora traces para certos endpoints para reduzir o volume de dados
+
+agents:
+  image:
+    tag: "latest"  # Opcionalmente, você pode definir uma versão específica
+
+  # Configuração de montagem de volumes para persistência de dados, se necessário
+  volumes:
+    - name: procdir
+      hostPath:
+        path: /proc
+    - name: cgroups
+      hostPath:
+        path: /sys/fs/cgroup
+    - name: varlog
+      hostPath:
+        path: /var/log  # Monta o diretório de logs do host
+    - name: varlibdockercontainers
+      hostPath:
+        path: /var/lib/docker/containers  # Monta o diretório onde os logs dos contêineres são armazenados
+      mountPath: /var/lib/docker/containers
+      readOnly: true

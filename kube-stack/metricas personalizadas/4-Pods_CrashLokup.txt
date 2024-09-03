@@ -1,0 +1,58 @@
+1 - Ir em dashboard > NEW > New Dashboard > import dashhboard (colocar o arqivo json)
+
+2 - Ii rme Dashboad > Slecionar o dashhboard criado
+
+	seleccionar : dashhboad de  "PodsCrashados" > edit > alert > criar alerta
+
+	1. Enter alert rule name: Pods não rodando
+	2. Define query and alert condition 
+
+		A: Prometheus
+		slelecionar code
+		Metrics browser: sum(rate(kube_pod_container_status_restarts_total{job="kube-state-metrics"}[5m])) by (pod, namespace)
+
+		
+		Expressions:
+
+		B - Reduce					C Threshold
+		Input: A					Input: B
+		Function: Count       Mode: Strict		IS ABOVE: 5
+								Custom recovery threshhold:
+								Stop alerting when below : 5
+
+
+	3. Set evaluation behavior
+
+		Folder: Monitoramento EKS (criar)
+		Evaluation group and interval: Pod Restart Group
+		periodo: 1m
+		pendinf period: 5m
+
+	4. Configure labels and notifications
+
+		Labels: Critical = PodRestartHigh
+		Notifications: 
+		Select Contact Point
+		Contact Point: Slack
+
+ 
+	
+	5. Add annotations
+
+	Summary (optional)
+
+	"Reinicializações frequentes no pod {{ $labels.pod }} no namespace {{ $labels.namespace }}."
+
+	Description (optional)
+
+	"Este alerta dispara quando um pod reinicia mais de 5 vezes em um curto período, indicando potenciais falhas na aplicação ou problemas de configuração."
+
+	Runbook URL (optional)
+
+	https://
+
+	Criar
+
+
+	
+	

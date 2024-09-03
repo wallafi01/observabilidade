@@ -1,0 +1,117 @@
+datadog:
+  apiKey: "6ae82e020464f731b57c16b1c1bfa8c5"
+
+  logs:
+    enabled: true
+    containerCollectAll: true
+    containerLogsPath: "/var/lib/docker/containers"
+    openFilesLimit: 1000
+
+  processAgent:
+    enabled: true
+
+  process_config:
+    process_collection:
+      enabled: true
+
+  kubeStateMetricsEnabled: true
+
+  clusterChecks:
+    enabled: true
+
+  kubeEvents:
+    enabled: true
+
+  docker:
+    network:
+      enabled: true
+
+  securityAgent:
+    runtime:
+      enabled: true
+    compliance:
+      enabled: true
+
+  hostMonitoring:
+    enabled: true
+
+  apm:
+    enabled: true
+    env: "homologation"
+    non_local_traffic: true
+    analyze_traces: true
+    receiver_port: 8126
+    connection_limit: 200
+    log_level: "INFO"
+    trace_sample_rate: 1.0
+    trace_analytics_enabled: true
+    extra_tags: "team:devops,service:myapp"
+
+  logCollection:
+    containerCollectAll: true
+    containerFilterName: ""
+
+  nodeSelector:
+    datadog-agent: enabled
+
+  tolerations:
+    - key: "node-role.kubernetes.io/master"
+      effect: "NoSchedule"
+
+  metrics:
+    enabled: true
+
+  secrets:
+    backend: "kubernetes"
+
+  autodiscovery:
+    enabled: true
+    container_include:
+      - image: "*"
+
+  resources:
+    limits:
+      memory: 512Mi
+      cpu: 200m
+    requests:
+      memory: 256Mi
+      cpu: 100m
+
+  apm_security:
+    tls_verify: true
+    auth_token: "mysecrettoken"
+
+  trace_filters:
+    ignore_resources: "GET /healthcheck,GET /metrics"
+
+agents:
+  image:
+    tag: "latest"
+
+  volumes:
+    - name: procdir-unique1
+      hostPath:
+        path: /proc
+    - name: cgroups-unique1
+      hostPath:
+        path: /sys/fs/cgroup
+    - name: varlog
+      hostPath:
+        path: /var/log
+    - name: dockercontainers-unique1
+      hostPath:
+        path: /var/lib/docker/containers
+
+  volumeMounts:
+    - name: procdir-unique1
+      mountPath: /host/proc
+      readOnly: true
+    - name: cgroups-unique1
+      mountPath: /host/sys/fs/cgroup
+      readOnly: true
+    - name: varlog
+      mountPath: /var/log
+      readOnly: false
+    - name: dockercontainers-unique1
+      mountPath: /var/lib/docker/containers
+      readOnly: true

@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  namespace: dev
+  labels:
+    app: nginx
+    tags.datadoghq.com/env: "dev"        # Definindo o ambiente como "dev" para o Datadog
+    tags.datadoghq.com/service: "nginx"  # Nome do serviço para APM
+    tags.datadoghq.com/version: "1.0.0"  # Versão do serviço
+  annotations:
+    admission.datadoghq.com/enabled: "true"  # Habilita o Admission Controller do Datadog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+        tags.datadoghq.com/env: "dev"
+        tags.datadoghq.com/service: "nginx"
+        tags.datadoghq.com/version: "1.0.0"
+      annotations:
+        ad.datadoghq.com/nginx.logs: '[{"source": "nginx", "service": "nginx"}]'  # Configuração para coletar logs do Nginx
+        ad.datadoghq.com/nginx.check_names: '["http_check"]'  # Configuração para autodiscovery e verificação HTTP
+        ad.datadoghq.com/nginx.init_configs: '[{}]'
+        ad.datadoghq.com/nginx.instances: '[{"name": "nginx", "url": "http://%%host%%:80"}]'  # Define a URL para o monitoramento HTTP
+    spec:
+      containers:
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          env:
+            # Environment variables for APM tracer and StatsD client
+            - name: DD_ENV
+              value: "dev"  # Definindo diretamente o valor do ambiente
+            - name: DD_SERVICE
+              value: "nginx"  # Nome do serviço conforme configurado nas labels
+            - name: DD_VERSION
+              value: "1.0.0"  # Definindo a versão do serviço
+            - name: DD_LOGS_INJECTION
+              value: "true"  # Habilita a injeção de IDs de trace e span nos logs

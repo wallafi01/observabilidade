@@ -1,0 +1,15 @@
+elk hhelm https://faun.pub/setting-up-elasticsearch-on-amazon-eks-5299bc94d7a5
+
+gp3  https://awstip.com/how-to-create-a-storage-class-on-amazon-eks-b933249d4ae2
+
+
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm install elasticsearch -n elastic --create-namespace bitnami/elasticsearch -f values.yaml
+
+kubectl port-forward svc/elasticsearch -n elastic 9200:9200
+
+curl -X GET -u "elastic:<elastic_password>" -k https://localhost:9200/_security/user
+
+curl -X POST -u "elastic:<elastic_password>" -k "https://localhost:9200/_security/user/kibana_system/_password" -H 'Content-Type: application/json' -d '{"password":"<elastic_password>"}'
+
+kubectl port-forward svc/elasticsearch-kibana -n elastic 5601:5601

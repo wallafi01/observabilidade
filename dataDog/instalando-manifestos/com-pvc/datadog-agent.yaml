@@ -1,0 +1,52 @@
+apiVersion: datadoghq.com/v2alpha1
+kind: DatadogAgent
+metadata:
+  name: datadog
+  namespace: default
+spec:
+  global:
+    clusterName: cluster-prod
+    registry: public.ecr.aws/datadog
+    tags:
+      - env:homologation
+    credentials:
+      apiSecret:
+        secretName: datadog-secret
+        keyName: api-key
+  features:
+    apm:
+      instrumentation:
+        enabled: true
+        libVersions:
+          java: v1
+          dotnet: v2
+          python: v2
+          js: v5
+          ruby: v2
+    logCollection:
+      enabled: true
+      containerCollectAll: true
+    asm:
+      threats:
+        enabled: true
+      sca:
+        enabled: true
+      iast:
+        enabled: true
+    cws:
+      enabled: true
+  agent:
+    config:
+      volumes:
+        - name: logs-storage
+          persistentVolumeClaim:
+            claimName: datadog-logs-pvc
+      volumeMounts:
+        - name: logs-storage
+          mountPath: /var/lib/datadog-agent/logs
+  daemonset:
+    updateStrategy: RollingUpdate
+  volumes:
+    - name: logs-storage
+      persistentVolumeClaim:
+        claimName: datadog-logs-pvc

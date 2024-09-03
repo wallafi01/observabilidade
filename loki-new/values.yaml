@@ -1,0 +1,81 @@
+loki:
+  enabled: true
+  persistence:
+    type: pvc
+    enabled: true
+    storageClassName: gp3
+    accessModes:
+      - ReadWriteOnce
+    size: 50Gi
+  config:
+    server:
+      http_listen_port: 3100  # Certifique-se de que o Loki está escutando na porta correta
+    ingester:
+      lifecycler:
+        ring:
+          kvstore:
+            store: inmemory  # Configuração básica para armazenamento em memória, adequada para testes
+    schema_config:
+      configs:
+        - from: 2023-01-01
+          store: boltdb-shipper
+          object_store: filesystem
+          schema: v11
+          index:
+            prefix: index_
+            period: 24h
+    storage_config:
+      boltdb_shipper:
+        active_index_directory: /data/loki/boltdb-shipper-active
+        cache_location: /data/loki/boltdb-shipper-cache
+        shared_store: filesystem
+      filesystem:
+        directory: /data/loki/chunks
+
+promtail:
+  enabled: true
+  pipelineStages:
+    - cri: {}
+    - json:
+        expressions:
+          is_even: is_even
+          level: level
+          version: version
+  config:
+    clients:
+      - url: http://loki:3100/loki/api/v1/push  # Certifique-se de que o Promtail está enviando para o endpoint correto
+    positions:
+      filename: /run/promtail/positions.yaml
+    server:
+      http_listen_port: 9080
+      log_level: info
+
+
+# loki:
+#  enabled: true
+#  persistence:
+#   type: pvc
+#   enabled: true
+#   storageClassName: gp3
+#   accessModes:
+#     - ReadWriteOnce
+#   size: 50Gi
+
+# promtail:
+#  enabled: true
+#  pipelineStages:
+#   - cri: {}
+#   - json:
+#     expressions:
+#      is_even: is_even
+#      level: level
+#      version: version
+
+# helm repo add grafana https://grafana.github.io/helm-charts
+# helm repo update
+# helm install loki grafana/loki-stack --namespace monitoring --values values.yaml --set grafana.enabled=false --set prometheus.enabled=false --set loki.config.server.http_listen_port=3100
+
+
+### outra versao
+
+# helm install loki grafana/loki-stack --version 5.6.0 --namespace monitoring --values values.yaml --set grafana.enabled=false --set prometheus.enabled=false
