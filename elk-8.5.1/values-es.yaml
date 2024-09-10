@@ -1,12 +1,80 @@
+# Configuração do número de réplicas para o cluster Elasticsearch
+replicas: 1
+
+# Template de Persistent Volume Claim para o Elasticsearch
+volumeClaimTemplate:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: gp3
+
+# Configuração da Readiness Probe para os pods do Elasticsearch
+readinessProbe:
+  exec:
+    command:
+      - bash
+      - -c
+      - |
+        set -e
+        if [ -z "${ELASTIC_PASSWORD}" ]; then
+          echo "ELASTIC_PASSWORD variable is missing, exiting"
+          exit 1
+        fi
+        START_FILE=/tmp/.es_start_file
+        if [ -f "${START_FILE}" ]; then
+          HTTP_CODE=$(curl -u "elastic:${ELASTIC_PASSWORD}" -k -s -o /dev/null -w "%{http_code}" https://127.0.0.1:9200/)
+          if [[ ${HTTP_CODE} == "200" ]]; then
+            exit 0
+          else
+            exit 1
+          fi
+        else
+          if curl -u "elastic:${ELASTIC_PASSWORD}" -k -s --fail https://127.0.0.1:9200/_cluster/health?wait_for_status=green&timeout=50s; then
+            touch ${START_FILE}
+            exit 0
+          else
+            exit 1
+          fi
+        fi
+  initialDelaySeconds: 60  # Tempo antes da primeira verificação
+  timeoutSeconds: 10       # Tempo para cada tentativa de probe
+  periodSeconds: 10        # Intervalo entre cada tentativa de probe
+  failureThreshold: 10     # Número de falhas antes de marcar o pod como não pronto
+
+# Parâmetros de verificação de saúde do cluster para garantir que o cluster está pronto
+clusterHealthCheckParams: "wait_for_status=green&timeout=50s"
+
+# Regras de afinidade para garantir que os pods do Elasticsearch sejam agendados em nós específicos
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: monitoring
+              operator: In
+              values:
+                - "true"
+
+
 # replicas: 1
 
 # volumeClaimTemplate:
-#   accessModes: 
+#   accessModes:
 #     - ReadWriteOnce
 #   resources:
 #     requests:
 #       storage: 20Gi
 #   storageClassName: gp3
+
+# readinessProbe:
+#   initialDelaySeconds: 60
+#   timeoutSeconds: 10
+#   periodSeconds: 10
+#   failureThreshold: 10
+
+# clusterHealthCheckParams: "wait_for_status=green&timeout=50s"
 
 # affinity:
 #   nodeAffinity:
@@ -17,34 +85,6 @@
 #               operator: In
 #               values:
 #                 - "true"
-
-replicas: 1
-
-volumeClaimTemplate:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 20Gi
-  storageClassName: gp3
-
-readinessProbe:
-  initialDelaySeconds: 60
-  timeoutSeconds: 10
-  periodSeconds: 10
-  failureThreshold: 10
-
-clusterHealthCheckParams: "wait_for_status=green&timeout=1s"
-
-affinity:
-  nodeAffinity:
-    requiredDuringSchedulingIgnoredDuringExecution:
-      nodeSelectorTerms:
-        - matchExpressions:
-            - key: monitoring
-              operator: In
-              values:
-                - "true"
 
 
 
