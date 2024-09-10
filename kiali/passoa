@@ -1,0 +1,8 @@
+helm repo add kiali https://kiali.github.io/helm-charts
+helm install kiali-operator kiali/kiali-operator --namespace istio --create-namespace
+
+kubectl apply -f kiali-cr.yaml
+
+criar ttoken:
+
+kubectl -n istio create token kiali-service-account
