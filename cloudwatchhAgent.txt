@@ -1,0 +1,216 @@
+1. Baixar o CloudWatch Agent
+Acesse o link para baixar o CloudWatch Agent:
+Download do CloudWatch Agent
+Baixe o arquivo .msi e salve no servidor Windows onde você deseja instalar o agente.
+
+2. Instalar o CloudWatch Agent
+Execute o instalador baixado (amazon-cloudwatch-agent.msi).
+Siga as instruções na tela para concluir a instalação. O agente será instalado em C:\Program Files\Amazon\AmazonCloudWatchAgent.
+
+3. Configurar o CloudWatch Agent para Coletar Métricas do IIS
+Criar o Arquivo de Configuração
+
+Crie um arquivo de configuração amazon-cloudwatch-agent.json no diretório onde o CloudWatch Agent está instalado ou em um local de sua preferência.
+
+Exemplo de configuração para coletar métricas do IIS e Application Pools:
+
+{
+  "metrics": {
+    "namespace": "IIS/ApplicationPools",
+    "append_dimensions": {
+      "InstanceId": "${aws:InstanceId}"
+    },
+    "metrics_collected": {
+      "PerformanceCounter": [
+        {
+          "Namespace": "CWAgent/IIS",
+          "MetricName": "CurrentConnections",
+          "Dimension": {
+            "Instance": "Total"
+          },
+          "Counters": [
+            "\\Web Service(_Total)\\Current Connections"
+          ],
+          "Unit": "Count"
+        },
+        {
+          "Namespace": "CWAgent/IIS",
+          "MetricName": "ApplicationPoolState",
+          "Dimension": {
+            "Instance": "w3wp"
+          },
+          "Counters": [
+            "\\APP_POOL_WAS(_Total)\\Current Application Pool State",
+            "\\APP_POOL_WAS(_Total)\\Worker Process Restarts"
+          ],
+          "Unit": "Count"
+        }
+      ]
+    }
+  }
+}
+
+Salve o arquivo amazon-cloudwatch-agent.json em um local acessível, como C:\Program Files\Amazon\AmazonCloudWatchAgent\config\.
+
+4. Configurar o CloudWatch Agent para Usar a Configuração
+Abra o Prompt de Comando como Administrador.
+
+Use o comando abaixo para aplicar a configuração e iniciar o CloudWatch Agent:
+
+cd "C:\Program Files\Amazon\AmazonCloudWatchAgent\"
+amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:C:\Program Files\Amazon\AmazonCloudWatchAgent\config\amazon-cloudwatch-agent.json -s
+
+amazon-cloudwatch-agent-ctl -m ec2 -a status
+
+
+Aqui está um passo a passo detalhado para instalar e configurar o Amazon CloudWatch Agent no Windows Server, incluindo a configuração para coletar métricas do IIS e dos Application Pools.
+
+Passo a Passo para Instalar o CloudWatch Agent no Windows Server
+1. Baixar o CloudWatch Agent
+Acesse o link para baixar o CloudWatch Agent:
+Download do CloudWatch Agent
+Baixe o arquivo .msi e salve no servidor Windows onde você deseja instalar o agente.
+2. Instalar o CloudWatch Agent
+Execute o instalador baixado (amazon-cloudwatch-agent.msi).
+Siga as instruções na tela para concluir a instalação. O agente será instalado em C:\Program Files\Amazon\AmazonCloudWatchAgent.
+3. Configurar o CloudWatch Agent para Coletar Métricas do IIS
+Criar o Arquivo de Configuração
+
+Crie um arquivo de configuração amazon-cloudwatch-agent.json no diretório onde o CloudWatch Agent está instalado ou em um local de sua preferência.
+
+Exemplo de configuração para coletar métricas do IIS e Application Pools:
+
+json
+Copiar código
+{
+  "metrics": {
+    "namespace": "IIS/ApplicationPools",
+    "append_dimensions": {
+      "InstanceId": "${aws:InstanceId}"
+    },
+    "metrics_collected": {
+      "PerformanceCounter": [
+        {
+          "Namespace": "CWAgent/IIS",
+          "MetricName": "CurrentConnections",
+          "Dimension": {
+            "Instance": "Total"
+          },
+          "Counters": [
+            "\\Web Service(_Total)\\Current Connections"
+          ],
+          "Unit": "Count"
+        },
+        {
+          "Namespace": "CWAgent/IIS",
+          "MetricName": "ApplicationPoolState",
+          "Dimension": {
+            "Instance": "w3wp"
+          },
+          "Counters": [
+            "\\APP_POOL_WAS(_Total)\\Current Application Pool State",
+            "\\APP_POOL_WAS(_Total)\\Worker Process Restarts"
+          ],
+          "Unit": "Count"
+        }
+      ]
+    }
+  }
+}
+Salvar o Arquivo de Configuração
+
+Salve o arquivo amazon-cloudwatch-agent.json em um local acessível, como C:\Program Files\Amazon\AmazonCloudWatchAgent\config\.
+4. Configurar o CloudWatch Agent para Usar a Configuração
+Abra o Prompt de Comando como Administrador.
+
+Use o comando abaixo para aplicar a configuração e iniciar o CloudWatch Agent:
+
+bash
+Copiar código
+cd "C:\Program Files\Amazon\AmazonCloudWatchAgent\"
+amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:C:\Program Files\Amazon\AmazonCloudWatchAgent\config\amazon-cloudwatch-agent.json -s
+Certifique-se de que o caminho para o arquivo de configuração está correto.
+5. Verificar o Status do CloudWatch Agent
+Para verificar se o CloudWatch Agent está rodando corretamente, use o comando:
+
+bash
+Copiar código
+amazon-cloudwatch-agent-ctl -m ec2 -a status
+
+6. Verificar Métricas no AWS CloudWatch
+Acesse o AWS CloudWatch Console em sua conta AWS.
+Verifique se as métricas do IIS e dos Application Pools estão sendo coletadas no namespace especificado (por exemplo, CWAgent/IIS).
+Dicas Adicionais
+Permissões IAM: Certifique-se de que a instância EC2 ou servidor possui uma role IAM com permissões para enviar métricas para o CloudWatch (CloudWatchAgentServerPolicy).
+Testar Configuração: Use o comando -t para testar a configuração sem aplicá-la para garantir que não há erros.
+
+
+amazon-cloudwatch-agent-ctl -a fetch-config -m ec2 -c file:C:\Program Files\Amazon\AmazonCloudWatchAgent\config\amazon-cloudwatch-agent.json -t
+
+
+===========================================================================GRAFFANA===================================================================================================
+
+Passo a Passo para Integrar CloudWatch com Grafana e Criar Dashboards para o IIS
+1. Configurar o CloudWatch como Fonte de Dados no Grafana
+Acessar o Grafana:
+
+Faça login na sua instância do Grafana.
+Adicionar CloudWatch como Fonte de Dados:
+
+No menu lateral do Grafana, clique em Configuration (⚙️) > Data Sources > Add data source.
+Selecione CloudWatch da lista de fontes de dados disponíveis.
+Configurar as Credenciais AWS:
+
+Name: Dê um nome à fonte de dados, como CloudWatch.
+Default Region: Selecione a região onde suas métricas do CloudWatch estão sendo enviadas.
+Authentication Provider:
+Access & secret key: Informe suas credenciais AWS (Access Key ID e Secret Access Key), se estiver configurando manualmente.
+Assume Role: Utilize se você tiver uma role configurada para o Grafana assumir as permissões necessárias.
+Default Credentials: Utilize as credenciais da EC2 se estiver rodando o Grafana dentro de uma instância AWS com permissões.
+Testar a Conexão:
+
+Clique em Save & Test para verificar se a configuração está correta e se o Grafana consegue acessar o CloudWatch.
+2. Criar Dashboards no Grafana para Monitorar Servidores IIS
+Criar um Novo Dashboard:
+
+No Grafana, clique no ícone "+" no menu lateral e selecione Dashboard.
+Clique em Add new panel para começar a adicionar painéis com métricas do IIS.
+Configurar os Painéis com Métricas do IIS:
+
+Painel 1: Current Connections
+
+Título: IIS Current Connections
+Data Source: Selecione o CloudWatch.
+Namespace: Digite o namespace configurado no CloudWatch Agent, como CWAgent/IIS.
+Metric Name: Selecione CurrentConnections.
+Dimension: Selecione a instância ou filtro relevante, como _Total.
+Descrição: Monitora o número de conexões atuais no IIS.
+Gráfico: Utilize um gráfico de linhas (Time Series) para exibir os dados.
+Painel 2: Application Pool State
+
+Título: Application Pool State
+Metric Name: Selecione ApplicationPoolState.
+Descrição: Exibe o estado dos Application Pools, como Started, Stopped.
+Tipo de Gráfico: Use um Stat Panel ou Gauge para visualização.
+Painel 3: Worker Process Restarts
+
+Título: Worker Process Restarts
+Metric Name: Selecione WorkerProcessRestarts.
+Descrição: Monitora o número de reinicializações dos processos de trabalho (w3wp).
+Tipo de Gráfico: Utilize um gráfico de barras ou linhas.
+Painel 4: Total HTTP Requests
+
+Título: Total HTTP Requests
+Metric Name: Selecione TotalRequests (incluindo GET e POST requests).
+Descrição: Total de requisições HTTP processadas pelo IIS.
+Tipo de Gráfico: Utilize um gráfico de linhas (Time Series).
+Adicionar Variáveis para Filtragem Dinâmica:
+
+Vá em Dashboard Settings > Variables e adicione variáveis para filtrar por instância, Application Pool, ou outras dimensões relevantes.
+Salvar o Dashboard:
+
+Clique em Save dashboard e nomeie o dashboard, por exemplo, "IIS Monitoring".
+Benefícios da Integração
+Alertas Customizados: Configure alertas no CloudWatch ou Grafana para notificações proativas sobre o desempenho do IIS.
+Visualização Interativa: Use as variáveis no Grafana para filtrar dinamicamente as métricas e focar em diferentes servidores ou Application Pools.
+
